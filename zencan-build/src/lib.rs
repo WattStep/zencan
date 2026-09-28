@@ -72,12 +72,14 @@ use snafu::ResultExt;
 
 mod codegen;
 pub mod device_config;
+pub mod eds;
 mod elaboration;
 pub mod errors;
 mod object_build_spec;
 mod system_objects;
 
 pub use codegen::device_config_to_string;
+pub use eds::{device_config_to_eds, generate_eds};
 //pub use codegen::device_config_to_tokens;
 use device_config::DeviceConfig;
 

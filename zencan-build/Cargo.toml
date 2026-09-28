@@ -26,6 +26,7 @@ regex = "1.12.4"
 assertables = "9.8.0"
 clap = { version = "4.5", features = ["derive"] }
 tempfile = "3.20.0"
+zencan-eds = { path = "../zencan-eds" }
 
 # docs.rs-specific configuration
 [package.metadata.docs.rs]

@@ -382,6 +382,16 @@ pub struct DeviceConfig {
     #[serde(default)]
     pub device_type: u32,
 
+    /// The vendor's name, written to the EDS
+    #[serde(default)]
+    pub vendor_name: String,
+
+    /// The CAN bit rates the device supports, in kbit/s, declared in the EDS
+    ///
+    /// The EDS can only declare 10, 20, 50, 125, 250, 500, 800 and 1000 kbit/s.
+    #[serde(default)]
+    pub bit_rates: Vec<u16>,
+
     /// Configures support for the AutoStart (0x5000) object and its default value
     ///
     /// Allowed values:
