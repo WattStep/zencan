@@ -58,6 +58,13 @@
 //!
 //! # Standard Objects
 //!
+//! ## 0x1000 - Device Type
+//!
+//! A VAR object containing a u32 which identifies the device profile. The low 16 bits are the
+//! profile number (e.g. 402 for a drive), the high 16 bits are profile-specific additional
+//! information. This value is set by [DeviceConfig::device_type], and is 0 (no standard profile)
+//! when it is not set.
+//!
 //! ## 0x1008 - Device Name
 //!
 //! A VAR object containing a string with a human readable device name. This value is set by
@@ -367,6 +374,13 @@ pub struct BootloaderConfig {
 pub struct DeviceConfig {
     /// The name describing the type of device (e.g. a model)
     pub device_name: String,
+
+    /// The value of the Device Type object (0x1000)
+    ///
+    /// The low 16 bits are the device profile number, the high 16 bits profile-specific additional
+    /// information. Defaults to 0: no standard device profile.
+    #[serde(default)]
+    pub device_type: u32,
 
     /// Configures support for the AutoStart (0x5000) object and its default value
     ///
