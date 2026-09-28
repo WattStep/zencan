@@ -269,7 +269,9 @@ impl Object {
                     }
                     .build(),
                 )?;
-                if *last_subindex != highest_subindex {
+                // A writable sub0 holds a count that changes at runtime, such as the number of
+                // entries mapped in a PDO mapping object, rather than the highest sub-index
+                if !first_subobj.access_type.is_writable() && *last_subindex != highest_subindex {
                     return EdsFormatSnafu {
                         message: format!(
                             "Invalid subindex for last subobject of '[{:X}]': expected highest subindex {}, found {}",
@@ -723,16 +725,20 @@ impl ElectronicDataSheet {
     fn parse_subobject(section: &Section) -> Result<SubObject, LoadError> {
         let access_type_field = "AccessType";
         let access_type_raw = section.get_string(access_type_field)?;
-        let access_type =
-            AccessType::try_from(access_type_raw.to_lowercase().as_ref()).map_err(|_| {
-                EdsFormatSnafu {
-                    message: format!(
-                        "Invalid value '{}' for field '{}' in '{}'",
-                        access_type_raw, access_type_field, section.name
-                    ),
-                }
-                .build()
-            })?;
+        // `rww` and `rwr` are read-write objects that map into RPDOs or TPDOs only
+        let access_type_lower = match access_type_raw.to_lowercase().as_str() {
+            "rww" | "rwr" => "rw".to_string(),
+            other => other.to_string(),
+        };
+        let access_type = AccessType::try_from(access_type_lower.as_ref()).map_err(|_| {
+            EdsFormatSnafu {
+                message: format!(
+                    "Invalid value '{}' for field '{}' in '{}'",
+                    access_type_raw, access_type_field, section.name
+                ),
+            }
+            .build()
+        })?;
         Ok(SubObject {
             parameter_name: section.get_string("ParameterName")?,
             data_type: DataTypeCode::from(section.get_u32("DataType")? as u16),
