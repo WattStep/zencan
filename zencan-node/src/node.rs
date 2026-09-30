@@ -25,11 +25,12 @@ use crate::{
 
 use defmt_or_log::{debug, info};
 
-pub type StoreNodeConfigFn<'a> = dyn FnMut(NodeId) + 'a;
-pub type StoreObjectsFn<'a> = dyn Fn(&mut dyn embedded_io::Read<Error = Infallible>, usize) + 'a;
-pub type StateChangeFn<'a> = dyn FnMut(&[ODEntry<'static>]) + 'a;
-pub type SyncReceiveFn<'a> = dyn FnMut(SyncObject) + 'a;
-pub type PdoReceiveFn<'a> = dyn for<'b> FnMut(u8, &'b [MappingEntry<'a>]);
+pub type StoreNodeConfigFn<'a> = dyn FnMut(NodeId) + Send + 'a;
+pub type StoreObjectsFn<'a> =
+    dyn Fn(&mut dyn embedded_io::Read<Error = Infallible>, usize) + Send + 'a;
+pub type StateChangeFn<'a> = dyn FnMut(&[ODEntry<'static>]) + Send + 'a;
+pub type SyncReceiveFn<'a> = dyn FnMut(SyncObject) + Send + 'a;
+pub type PdoReceiveFn<'a> = dyn for<'b> FnMut(u8, &'b [MappingEntry<'a>]) + Send;
 
 /// Collection of callbacks events which Node object can call.
 ///
@@ -559,6 +560,12 @@ impl<'a> Node<'a> {
         }
     }
 }
+
+// A node is built in one context and often run in another, so it must stay `Send`.
+const _: fn() = || {
+    fn assert_send<T: Send>() {}
+    assert_send::<Node<'static>>();
+};
 
 #[cfg(test)]
 mod tests {
